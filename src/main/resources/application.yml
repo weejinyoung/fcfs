@@ -1,0 +1,14 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      redisson:
+        wait-time: 2000
+        lease-time: 2000
+
+logging:
+  level:
+    root: INFO
+
+
