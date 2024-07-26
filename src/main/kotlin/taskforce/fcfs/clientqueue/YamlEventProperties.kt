@@ -1,4 +1,4 @@
-package taskforce.fcfs.allocate
+package taskforce.fcfs.clientqueue
 
 import taskforce.fcfs.clientqueue.EventProperties
 import org.springframework.stereotype.Component
