@@ -28,7 +28,8 @@ class EventClientRedisQueue(
     private val logger = KotlinLogging.logger {}
 
     override fun join(client: String): JoinResult =
-        if (admittedQueue.size >= eventProperties.getEventLimit()) JoinResult.Fail(EVENT_DONE_MESSAGE)
+        if (admittedQueue.size >= eventProperties.getEventLimit())
+            JoinResult.Fail(EVENT_DONE_MESSAGE)
         else JoinResult.Success(
             waitingQueue.addAndGetRank(System.currentTimeMillis().toDouble(), client),
             LocalDateTime.now()

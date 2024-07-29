@@ -32,9 +32,4 @@ class CouponEventTest (
         countDownLatch.await()
         Thread.sleep(5000)
     }
-
-    "코드 생성" {
-        CodeFactory.init(1000)
-        CodeFactory.getCodes()
-    }
 })
