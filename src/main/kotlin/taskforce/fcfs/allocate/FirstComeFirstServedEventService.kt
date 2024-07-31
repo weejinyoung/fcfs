@@ -14,6 +14,6 @@ class FirstComeFirstServedEventService(
         eventClientQueue.join(client)
 
     @Scheduled(fixedDelay = 500)
-    private fun admitClientsInQueueScheduler() =
+    private fun pollingClientQueue() =
         eventClientQueue.admitNextClients(queueAdmitProperties.getRequest())
 }

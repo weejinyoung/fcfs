@@ -22,18 +22,26 @@ class EventClientRedisQueue(
         private const val NOT_YET_JOIN_MESSAGE = "You didn't join yet"
     }
 
-    // TODO Waiting Queue 의 최대 제한 설정
+    // TODO Waiting Queue 의 최대 제한 설정... 이건 레디스에서 아니면 애플리케이션에서?
     private val waitingQueue = redissonClient.getScoredSortedSet<String>("${eventProperties.getEventName()}$WAITING_QUEUE_REDIS_KEY_POSTFIX")
     private val admittedQueue = redissonClient.getSet<String>("${eventProperties.getEventName()}$ADMITTED_QUEUE_REDIS_KEY_POSTFIX")
+    // 현재 허용돤 클라이언트 수 캐싱, 이것의 동기화를 해줄 필요가 있나?
+    private var admittedClientCount = 0
+
     private val logger = KotlinLogging.logger {}
 
     override fun join(client: String): JoinResult =
-        if (admittedQueue.size >= eventProperties.getEventLimit())
+        if (admittedClientCount >= eventProperties.getEventLimit()) {
             JoinResult.Fail(EVENT_DONE_MESSAGE)
-        else JoinResult.Success(
-            waitingQueue.addAndGetRank(System.currentTimeMillis().toDouble(), client),
-            LocalDateTime.now()
-        )
+        } else {
+            admittedClientCount = admittedQueue.size
+            if (admittedClientCount >= eventProperties.getEventLimit())
+                JoinResult.Fail(EVENT_DONE_MESSAGE)
+            else JoinResult.Success(
+                waitingQueue.addAndGetRank(System.currentTimeMillis().toDouble(), client),
+                LocalDateTime.now()
+            )
+        }
 
     override fun admitNextClients(request: Int) {
         redissonLockManager.tryLockWith(eventProperties.getEventName()) {
@@ -56,6 +64,14 @@ class EventClientRedisQueue(
         waitingQueue.rank(client)
             ?.let { RankResult.Success(it) }
             ?: RankResult.Fail(NOT_YET_JOIN_MESSAGE)
+
+//    override fun join(client: String): JoinResult =
+//        if (admittedQueue.size >= eventProperties.getEventLimit())
+//            JoinResult.Fail(EVENT_DONE_MESSAGE)
+//        else JoinResult.Success(
+//            waitingQueue.addAndGetRank(System.currentTimeMillis().toDouble(), client),
+//            LocalDateTime.now()
+//        )
 
 //    override fun join(client: String): JoinResult {
 //        admittedQueue.run {
