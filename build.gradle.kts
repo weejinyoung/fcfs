@@ -18,13 +18,11 @@ repositories {
 	mavenCentral()
 }
 
-val tsidCreatorVersion = "5.2.6"
 val redissonVersion = "3.32.0"
 val kotlinLoggingVersion = "6.0.3"
 val kotestRunnerVersion = "5.8.0"
 val kotestExtensionsVersion = "1.1.3"
 val mockkVersion = "4.0.2"
-val coroutinesVersion = "1.8.0-RC2"
 
 dependencies {
 
@@ -40,9 +38,6 @@ dependencies {
 
 	// Logging
 	implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
-
-	// TSID Creator
-	implementation("com.github.f4b6a3:tsid-creator:${tsidCreatorVersion}")
 
 	// Dev Tools
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
