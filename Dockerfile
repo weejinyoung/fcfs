@@ -1,5 +1,5 @@
 # 1단계: 빌드 단계
-FROM gradle:8.3-jdk17 AS build
+FROM gradle:jdk17-alpine AS build
 
 # 빌드 컨텍스트의 모든 내용을 작업 디렉토리에 복사합니다.
 WORKDIR /app
@@ -9,7 +9,7 @@ COPY . .
 RUN gradle clean build -x test
 
 # 2단계: 실행 단계
-FROM amazoncorretto:17.0.6-alpine3.18
+FROM amazoncorretto:17-alpine
 
 # JAR 파일을 실행할 작업 디렉토리 설정
 WORKDIR /app
