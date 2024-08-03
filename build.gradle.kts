@@ -18,10 +18,10 @@ repositories {
 	mavenCentral()
 }
 
-val redissonVersion = "3.32.0"
-val kotlinLoggingVersion = "6.0.3"
-val kotestRunnerVersion = "5.8.0"
-val kotestExtensionsVersion = "1.1.3"
+val redissonVersion = "3.33.0"
+val kotlinLoggingVersion = "7.0.0"
+val kotestRunnerVersion = "5.9.0"
+val kotestExtensionsVersion = "1.3.0"
 val mockkVersion = "4.0.2"
 
 dependencies {
