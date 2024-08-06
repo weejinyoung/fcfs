@@ -6,8 +6,6 @@ import taskforce.fcfs.clientqueue.result.RankResult
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.redisson.api.RedissonClient
 import org.springframework.stereotype.Component
-import java.time.LocalDateTime
-import kotlin.math.log
 
 @Component
 class EventClientRedisQueue(
@@ -41,8 +39,8 @@ class EventClientRedisQueue(
             if (admittedClientCount >= eventProperties.getEventLimit()) {
                 JoinResult.Fail(EVENT_DONE_MESSAGE)
             } else {
-                System.currentTimeMillis().toDouble().let {
-                    JoinResult.Success(waitingQueue.addAndGetRank(it, client), it)
+                System.nanoTime().let {
+                    JoinResult.Success(waitingQueue.addAndGetRank(it.toDouble(), client), it)
                 }
             }
         }
