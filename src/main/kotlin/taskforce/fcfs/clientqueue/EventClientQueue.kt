@@ -12,7 +12,6 @@ interface EventClientQueue<T> {
     fun join(client: T): JoinResult
     /**
      * Admit next clients
-     * @return the client's identifier collections who admitted
      */
     fun admitNextClients(request: Int)
 

@@ -24,26 +24,21 @@ class EventClientRedisQueue(
     // TODO Waiting Queue 의 최대 제한 설정... 이건 레디스에서 아니면 애플리케이션에서?
     private val waitingQueue = redissonClient.getScoredSortedSet<String>("${eventProperties.getEventName()}$WAITING_QUEUE_REDIS_KEY_POSTFIX")
     private val admittedQueue = redissonClient.getSet<String>("${eventProperties.getEventName()}$ADMITTED_QUEUE_REDIS_KEY_POSTFIX")
-
-    // 현재 허용돤 클라이언트 수 캐싱, 이것의 동기화를 해줄 필요가 있나?
     private var admittedClientCount = 0
-
     private val logger = KotlinLogging.logger {}
 
-    override fun join(client: String): JoinResult =
+    override fun join(client: String): JoinResult {
         if (admittedClientCount >= eventProperties.getEventLimit()) {
-            JoinResult.Fail(EVENT_DONE_MESSAGE)
-        } else {
-            admittedClientCount = admittedQueue.size
-            logger.info { "admittedClientCount : $admittedClientCount" }
-            if (admittedClientCount >= eventProperties.getEventLimit()) {
-                JoinResult.Fail(EVENT_DONE_MESSAGE)
-            } else {
-                System.nanoTime().let {
-                    JoinResult.Success(waitingQueue.addAndGetRank(it.toDouble(), client), it)
-                }
-            }
+            return JoinResult.Fail(EVENT_DONE_MESSAGE)
         }
+        admittedClientCount = admittedQueue.size
+        if (admittedClientCount >= eventProperties.getEventLimit()) {
+            return JoinResult.Fail(EVENT_DONE_MESSAGE)
+        }
+        return System.nanoTime().let {
+            JoinResult.Success(waitingQueue.addAndGetRank(it.toDouble(), client), it)
+        }
+    }
 
     override fun admitNextClients(request: Int) {
         redissonLockManager.tryLockWith(eventProperties.getEventName()) {
