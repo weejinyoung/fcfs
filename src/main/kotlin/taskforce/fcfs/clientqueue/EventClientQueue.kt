@@ -11,9 +11,13 @@ interface EventClientQueue<T> {
      */
     fun join(client: T): JoinResult
     /**
-     * Admit next clients
+     * Admit next clients for standalone environment
      */
-    fun admitNextClients(request: Int)
+    fun admitNextClientsForStandalone(request: Int)
+    /**
+     * Admit next clients for distributed environment
+     */
+    fun admitNextClientsForDistributed(request: Int)
 
     fun getWaitingRank(client: String): RankResult
 }

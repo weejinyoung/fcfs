@@ -22,8 +22,10 @@ class EventClientRedisQueue(
     }
 
     // TODO Waiting Queue 의 최대 제한 설정... 이건 레디스에서 아니면 애플리케이션에서?
-    private val waitingQueue = redissonClient.getScoredSortedSet<String>("${eventProperties.getEventName()}$WAITING_QUEUE_REDIS_KEY_POSTFIX")
-    private val admittedQueue = redissonClient.getSet<String>("${eventProperties.getEventName()}$ADMITTED_QUEUE_REDIS_KEY_POSTFIX")
+    private val waitingQueue =
+        redissonClient.getScoredSortedSet<String>("${eventProperties.getEventName()}$WAITING_QUEUE_REDIS_KEY_POSTFIX")
+    private val admittedQueue =
+        redissonClient.getSet<String>("${eventProperties.getEventName()}$ADMITTED_QUEUE_REDIS_KEY_POSTFIX")
     private var admittedClientCount = 0
     private val logger = KotlinLogging.logger {}
 
@@ -40,7 +42,22 @@ class EventClientRedisQueue(
         }
     }
 
-    override fun admitNextClients(request: Int) {
+    override fun admitNextClientsForStandalone(request: Int) {
+        val current = admittedQueue.size
+        if (current >= eventProperties.getEventLimit()) {
+            logger.info { "Event is over" }
+            return
+        }
+        val admit = minOf((eventProperties.getEventLimit() - current), request)
+        val admittedClients = waitingQueue.valueRange(0, admit - 1).ifEmpty {
+            logger.info { "Waiting queue is empty" }
+            return
+        }
+        waitingQueue.removeRangeByRank(0, admit - 1)
+        admittedQueue.addAll(admittedClients)
+    }
+
+    override fun admitNextClientsForDistributed(request: Int) {
         redissonLockManager.tryLockWith(eventProperties.getEventName()) {
             val current = admittedQueue.size
             if (current >= eventProperties.getEventLimit()) {
