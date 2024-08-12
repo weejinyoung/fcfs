@@ -35,6 +35,7 @@ dependencies {
 
 	// Inmemory DB Access
 	implementation("org.redisson:redisson-spring-boot-starter:${redissonVersion}")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
 	// Logging
 	implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")

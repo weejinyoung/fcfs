@@ -1,11 +1,11 @@
 package taskforce.fcfs.clientqueue
 
-import taskforce.fcfs.config.RedissonLockManager
-import taskforce.fcfs.clientqueue.result.JoinResult
-import taskforce.fcfs.clientqueue.result.RankResult
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.redisson.api.RedissonClient
 import org.springframework.stereotype.Component
+import taskforce.fcfs.clientqueue.result.JoinResult
+import taskforce.fcfs.clientqueue.result.RankResult
+import taskforce.fcfs.config.RedissonLockManager
 
 @Component
 class EventClientRedisQueue(
@@ -96,10 +96,10 @@ class EventClientRedisQueue(
 //    }
 
 
-    //    private val COUNT_REDIS_KEY_POSTFIX = ":CLIENT:ADMITTED:COUNT"
+//    private val COUNT_REDIS_KEY_POSTFIX = ":CLIENT:ADMITTED:COUNT"
 //    private val QUEUE_REDIS_KEY_POSTFIX = ":CLIENT:QUEUE"
 
-    //    override fun join(event: String, client: String): Int =
+//    override fun join(event: String, client: String): Int =
 //        redissonClient.getScoredSortedSet<String>("$event$QUEUE_REDIS_KEY_POSTFIX")
 //            .addAndGetRank(System.currentTimeMillis().toDouble(), client)
 //

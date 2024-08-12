@@ -28,4 +28,12 @@ class RedisConfig {
             .setAddress("redis://$host:$port")
         return Redisson.create(config)
     }
+
+    @Bean
+    fun redisTemplate(redisConnectionFactory: LettuceConnectionFactory) =
+        RedisTemplate<String, String>().apply {
+            keySerializer = StringRedisSerializer()
+            valueSerializer = StringRedisSerializer()
+            connectionFactory = redisConnectionFactory
+        }
 }
