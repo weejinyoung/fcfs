@@ -26,19 +26,16 @@ class EventClientNonLockQueue(
 
     private val admitLua = RedisScript.of(
         """
-            local current = redis.call('llen', KEYS[2])
-            local eventLimit = tonumber(redis.call('get', KEYS[3]))
-            if current >= eventLimit then return 1 end
-            local admit = math.min(eventLimit - current, tonumber(ARGV[1]))
+            local current = redis.call('llen', KEYS[1])
+            if current >= ARGV[1] then return 1 end
+            local admit = math.min(eventLimit - current, tonumber(ARGV[2]))
             local admittedClients = redis.call('zrange', KEYS[1], 0, admit - 1)
             if #admittedClients == 0 then return 2 end
-            redis.call('zremrangebyrank', KEYS[1], 0, admit - 1)
-            redis.call('rpush', KEYS[2], unpack(admittedClients))
+            redis.call('zremrangebyrank', KEYS[2], 0, admit - 1)
+            redis.call('rpush', KEYS[1], unpack(admittedClients))
             return 3
             """, Int::class.java
     )
-    private val admitLuaKeys = listOf(waitingQueueKey, admittedQueueKey, admittedQueueKey)
-
     private val joinLua = RedisScript.of(
         "redis.call('zadd', KEYS[1], ARGV[1], ARGV[2]);return redis.call('zrank', KEYS[1], ARGV[2]); ",
         Int::class.java
@@ -73,8 +70,8 @@ class EventClientNonLockQueue(
     override fun admitNextClientsForDistributed(request: Int) =
         lettuceClient.execute(
             admitLua,
-            admitLuaKeys,
-            listOf(request).toTypedArray()
+            listOf(admittedQueueKey, waitingQueueKey),
+            listOf(eventProperties.getEventLimit(), request)
         ).let {
             when (it) {
                 1 -> logger.info { "Event is over" }
