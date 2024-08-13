@@ -8,7 +8,7 @@ import taskforce.fcfs.clientqueue.result.RankResult
 import taskforce.fcfs.config.RedissonLockManager
 
 @Component
-class EventClientRedisQueue(
+class EventClientRedisDisLockQueue(
     private val redissonLockManager: RedissonLockManager,
     private val redissonClient: RedissonClient,
     private val eventProperties: EventProperties
@@ -28,7 +28,7 @@ class EventClientRedisQueue(
         redissonClient.getSet<String>("${eventProperties.getEventName()}$ADMITTED_QUEUE_REDIS_KEY_POSTFIX")
     private var admittedClientCount = 0
     private val logger = KotlinLogging.logger {}
-    
+
     override fun join(client: String): JoinResult {
         if (admittedClientCount >= eventProperties.getEventLimit()) {
             return JoinResult.Fail(EVENT_DONE_MESSAGE)

@@ -9,7 +9,7 @@ import taskforce.fcfs.clientqueue.result.RankResult
 
 
 @Component
-class EventClientNonLockQueue(
+class EventClientRedisLuaQueue(
     private val eventProperties: EventProperties,
     private val lettuceClient: RedisTemplate<String, Any>
 ) : EventClientQueue<String> {
@@ -97,7 +97,6 @@ class EventClientNonLockQueue(
                 else -> throw Exception()
             }
         }
-
 
     override fun getWaitingRank(client: String): RankResult =
         lettuceClient.opsForZSet().rank(waitingQueueKey, client)
