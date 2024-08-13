@@ -5,5 +5,5 @@ import taskforce.fcfs.allocate.QueueAdmitProperties
 
 @Component
 class YamlQueueAdmitProperties : QueueAdmitProperties {
-    override fun getRequest(): Int = 50
+    override fun getRequest(): Long = 50L
 }

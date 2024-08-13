@@ -28,7 +28,7 @@ class EventClientRedisQueue(
         redissonClient.getSet<String>("${eventProperties.getEventName()}$ADMITTED_QUEUE_REDIS_KEY_POSTFIX")
     private var admittedClientCount = 0
     private val logger = KotlinLogging.logger {}
-
+    
     override fun join(client: String): JoinResult {
         if (admittedClientCount >= eventProperties.getEventLimit()) {
             return JoinResult.Fail(EVENT_DONE_MESSAGE)
@@ -38,26 +38,26 @@ class EventClientRedisQueue(
             return JoinResult.Fail(EVENT_DONE_MESSAGE)
         }
         return System.nanoTime().let {
-            JoinResult.Success(waitingQueue.addAndGetRank(it.toDouble(), client), it)
+            JoinResult.Success(waitingQueue.addAndGetRank(it.toDouble(), client).toLong(), it)
         }
     }
 
-    override fun admitNextClientsForStandalone(request: Int) {
+    override fun admitNextClientsForStandalone(request: Long) {
         val current = admittedQueue.size
         if (current >= eventProperties.getEventLimit()) {
             logger.info { "Event is over" }
             return
         }
         val admit = minOf((eventProperties.getEventLimit() - current), request)
-        val admittedClients = waitingQueue.valueRange(0, admit - 1).ifEmpty {
+        val admittedClients = waitingQueue.valueRange(0, (admit - 1).toInt()).ifEmpty {
             logger.info { "Waiting queue is empty" }
             return
         }
-        waitingQueue.removeRangeByRank(0, admit - 1)
+        waitingQueue.removeRangeByRank(0, (admit - 1).toInt())
         admittedQueue.addAll(admittedClients)
     }
 
-    override fun admitNextClientsForDistributed(request: Int) {
+    override fun admitNextClientsForDistributed(request: Long) {
         redissonLockManager.tryLockWith(eventProperties.getEventName()) {
             val current = admittedQueue.size
             if (current >= eventProperties.getEventLimit()) {
@@ -65,11 +65,11 @@ class EventClientRedisQueue(
                 return@tryLockWith
             }
             val admit = minOf((eventProperties.getEventLimit() - current), request)
-            val admittedClients = waitingQueue.valueRange(0, admit - 1).ifEmpty {
+            val admittedClients = waitingQueue.valueRange(0, (admit - 1).toInt()).ifEmpty {
                 logger.info { "Waiting queue is empty" }
                 return@tryLockWith
             }
-            waitingQueue.removeRangeByRank(0, admit - 1)
+            waitingQueue.removeRangeByRank(0, (admit - 1).toInt())
             admittedQueue.addAll(admittedClients)
         }
     }

@@ -11,7 +11,7 @@ import taskforce.fcfs.clientqueue.result.RankResult
 @Component
 class EventClientNonLockQueue(
     private val eventProperties: EventProperties,
-    private val lettuceClient: RedisTemplate<String, String>
+    private val lettuceClient: RedisTemplate<String, Any>
 ) : EventClientQueue<String> {
 
     companion object {
@@ -24,21 +24,39 @@ class EventClientNonLockQueue(
     private val waitingQueueKey = "${eventProperties.getEventName()}${WAITING_QUEUE_REDIS_KEY_POSTFIX}"
     private val admittedQueueKey = "${eventProperties.getEventName()}${ADMITTED_QUEUE_REDIS_KEY_POSTFIX}"
 
+    /*
+    KEYS[1] = admittedQueueKey
+    KEYS[2] = waitingQueueKey
+    ARGV[1] = eventLimit
+    ARGV[2] = request
+    */
     private val admitLua = RedisScript.of(
         """
-            local current = redis.call('llen', KEYS[1])
-            if current >= ARGV[1] then return 1 end
-            local admit = math.min(eventLimit - current, tonumber(ARGV[2]))
-            local admittedClients = redis.call('zrange', KEYS[1], 0, admit - 1)
-            if #admittedClients == 0 then return 2 end
-            redis.call('zremrangebyrank', KEYS[2], 0, admit - 1)
-            redis.call('rpush', KEYS[1], unpack(admittedClients))
+            if redis.call('exists', KEYS[1]) == 0 then 
+                redis.call('sadd', KEYS[1], 'temp')  
+                redis.call('srem', KEYS[1], 'temp')
+            end
+            local current = tonumber(redis.call('scard', KEYS[1]));
+            if current >= tonumber(ARGV[1]) then 
+                return 1
+            end;
+            local admit = math.min(tonumber(ARGV[1]) - current, tonumber(ARGV[2]));
+            if redis.call('exists', KEYS[2]) == 0 then
+                redis.call('zadd', KEYS[2], 0, 'temp')
+                redis.call('zremrangebyrank', KEYS[2], 0, 0)  
+            end
+            local admittedClients = redis.call('zrange', KEYS[2], 0, admit - 1);
+            if #admittedClients == 0 then
+                return 2
+            end;
+            redis.call('zremrangebyrank', KEYS[2], 0, admit - 1);
+            redis.call('sadd', KEYS[1], unpack(admittedClients));
             return 3
-            """, Int::class.java
+            """, Long::class.java
     )
     private val joinLua = RedisScript.of(
         "redis.call('zadd', KEYS[1], ARGV[1], ARGV[2]);return redis.call('zrank', KEYS[1], ARGV[2]); ",
-        Int::class.java
+        Long::class.java
     )
 
     private var admittedClientCount = 0L
@@ -55,28 +73,27 @@ class EventClientNonLockQueue(
         return System.nanoTime().let {
             JoinResult.Success(
                 lettuceClient.execute(
-                    joinLua,
-                    listOf(waitingQueueKey),
-                    listOf(it.toDouble(), client).toTypedArray()
-                ), it
+                    joinLua, listOf(waitingQueueKey), it, client),
+                it
             )
         }
     }
 
-    override fun admitNextClientsForStandalone(request: Int) {
+    override fun admitNextClientsForStandalone(request: Long) {
         admitNextClientsForDistributed(request)
     }
 
-    override fun admitNextClientsForDistributed(request: Int) =
+    override fun admitNextClientsForDistributed(request: Long) =
         lettuceClient.execute(
             admitLua,
             listOf(admittedQueueKey, waitingQueueKey),
-            listOf(eventProperties.getEventLimit(), request)
+            eventProperties.getEventLimit(),
+            request
         ).let {
             when (it) {
-                1 -> logger.info { "Event is over" }
-                2 -> logger.info { "Waiting queue is empty" }
-                3 -> logger.info { "Admit Success" }
+                1L -> logger.info { "Event is over" }
+                2L -> logger.info { "Waiting queue is empty" }
+                3L -> logger.info { "Admit Success" }
                 else -> throw Exception()
             }
         }

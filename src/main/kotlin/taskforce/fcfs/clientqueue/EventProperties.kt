@@ -4,5 +4,5 @@ package taskforce.fcfs.clientqueue
 // TODO 쌩 빈 주입보단 @ConfigurationProperties 와 @EnableConfigurationProperties 을 쓰는 게 나을듯
 interface EventProperties {
     fun getEventName(): String
-    fun getEventLimit(): Int
+    fun getEventLimit(): Long
 }

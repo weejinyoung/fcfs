@@ -1,12 +1,13 @@
 package taskforce.fcfs.allocate
 
+import org.springframework.beans.factory.annotation.Qualifier
 import taskforce.fcfs.clientqueue.EventClientQueue
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @Service
 class FirstComeFirstServedEventService(
-    private val eventClientQueue: EventClientQueue<String>,
+    @Qualifier("eventClientNonLockQueue") private val eventClientQueue: EventClientQueue<String>,
     private val queueAdmitProperties: QueueAdmitProperties
 ) {
 
