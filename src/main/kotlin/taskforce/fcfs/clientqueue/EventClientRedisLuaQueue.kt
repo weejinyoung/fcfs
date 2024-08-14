@@ -59,15 +59,15 @@ class EventClientRedisLuaQueue(
         Long::class.java
     )
 
-    private var admittedClientCount = 0L
+    private var admittedClientCountCache = 0L
     private val logger = KotlinLogging.logger {}
 
     override fun join(client: String): JoinResult {
-        if (admittedClientCount >= eventProperties.getEventLimit()) {
+        if (admittedClientCountCache >= eventProperties.getEventLimit()) {
             return JoinResult.Fail(EVENT_DONE_MESSAGE)
         }
-        admittedClientCount = lettuceClient.opsForSet().size(admittedQueueKey) ?: throw Exception()
-        if (admittedClientCount >= eventProperties.getEventLimit()) {
+        admittedClientCountCache = lettuceClient.opsForSet().size(admittedQueueKey) ?: throw Exception()
+        if (admittedClientCountCache >= eventProperties.getEventLimit()) {
             return JoinResult.Fail(EVENT_DONE_MESSAGE)
         }
         return System.nanoTime().let {

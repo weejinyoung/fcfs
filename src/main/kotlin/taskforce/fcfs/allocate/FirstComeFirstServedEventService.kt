@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class FirstComeFirstServedEventService(
-    @Qualifier("eventClientNonLockQueue") private val eventClientQueue: EventClientQueue<String>,
+    @Qualifier("eventClientRedisLuaQueue") private val eventClientQueue: EventClientQueue<String>,
     private val queueAdmitProperties: QueueAdmitProperties
 ) {
 
