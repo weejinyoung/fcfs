@@ -1,9 +1,11 @@
 package taskforce.fcfs.allocate
 
-import org.springframework.stereotype.Component
-import taskforce.fcfs.allocate.QueueAdmitProperties
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.bind.ConstructorBinding
 
-@Component
-class YamlQueueAdmitProperties : QueueAdmitProperties {
-    override fun getRequest(): Long = 50L
+@ConfigurationProperties(prefix = "spring.fcfs.queue")
+data class YamlQueueAdmitProperties @ConstructorBinding constructor (
+    val request: Long
+) : QueueAdmitProperties {
+    override fun getAdmitRequest(): Long = request
 }

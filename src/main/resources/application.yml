@@ -6,6 +6,12 @@ spring:
       redisson:
         wait-time: 2000
         lease-time: 2000
+  fcfs:
+    event:
+      limit: 1000
+      name: CHICKEN
+    queue:
+      request: 50
 
 logging:
   level:

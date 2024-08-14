@@ -1,5 +1,5 @@
 package taskforce.fcfs.allocate
 
 interface QueueAdmitProperties {
-    fun getRequest(): Long
+    fun getAdmitRequest(): Long
 }
