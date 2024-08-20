@@ -30,50 +30,48 @@ class EventClientRedisLuaQueue(
     ARGV[1] = eventLimit
     ARGV[2] = request
     */
-    private val admitLua = RedisScript.of(
+    // TODO Queue 가 없을 시 생성하는 로직을 여기가 아닌 생성 시에 한 번 호출하는 것으로 바꿔주는 게 좋을까?
+    private val luaOfAdmittingLogic = RedisScript.of(
         """
-            if redis.call('exists', KEYS[1]) == 0 then 
-                redis.call('sadd', KEYS[1], 'temp')  
-                redis.call('srem', KEYS[1], 'temp')
-            end
-            local current = tonumber(redis.call('scard', KEYS[1]));
-            if current >= tonumber(ARGV[1]) then 
-                return 1
-            end;
-            local admit = math.min(tonumber(ARGV[1]) - current, tonumber(ARGV[2]));
-            if redis.call('exists', KEYS[2]) == 0 then
-                redis.call('zadd', KEYS[2], 0, 'temp')
-                redis.call('zremrangebyrank', KEYS[2], 0, 0)  
-            end
-            local admittedClients = redis.call('zrange', KEYS[2], 0, admit - 1);
-            if #admittedClients == 0 then
-                return 2
-            end;
-            redis.call('zremrangebyrank', KEYS[2], 0, admit - 1);
-            redis.call('sadd', KEYS[1], unpack(admittedClients));
-            return 3
-            """, Long::class.java
+           if redis.call('exists', KEYS[1]) == 0 then 
+               redis.call('sadd', KEYS[1], 'temp')  
+               redis.call('srem', KEYS[1], 'temp')
+           end
+           local current = tonumber(redis.call('scard', KEYS[1]));
+           if current >= tonumber(ARGV[1]) then 
+               return 1
+           end;
+           local admit = math.min(tonumber(ARGV[1]) - current, tonumber(ARGV[2]));
+           if redis.call('exists', KEYS[2]) == 0 then
+               redis.call('zadd', KEYS[2], 0, 'temp')
+               redis.call('zremrangebyrank', KEYS[2], 0, 0)  
+           end
+           local admittedClients = redis.call('zrange', KEYS[2], 0, admit - 1);
+           if #admittedClients == 0 then
+               return 2
+           end;
+           redis.call('zremrangebyrank', KEYS[2], 0, admit - 1);
+           redis.call('sadd', KEYS[1], unpack(admittedClients));
+           return 3
+           """,
+        Long::class.java
     )
-    private val joinLua = RedisScript.of(
+    private val luaOfJoiningLogic = RedisScript.of(
         "redis.call('zadd', KEYS[1], ARGV[1], ARGV[2]);return redis.call('zrank', KEYS[1], ARGV[2]); ",
         Long::class.java
     )
 
-    private var admittedClientCountCache = 0L
     private val logger = KotlinLogging.logger {}
 
     override fun join(client: String): JoinResult {
-        if (admittedClientCountCache >= eventProperties.getEventLimit()) {
-            return JoinResult.Fail(EVENT_DONE_MESSAGE)
-        }
-        admittedClientCountCache = lettuceClient.opsForSet().size(admittedQueueKey) ?: throw Exception()
-        if (admittedClientCountCache >= eventProperties.getEventLimit()) {
+        val current = lettuceClient.opsForSet().size(admittedQueueKey) ?: throw Exception()
+        if (current >= eventProperties.getEventLimit()) {
             return JoinResult.Fail(EVENT_DONE_MESSAGE)
         }
         return System.nanoTime().let {
             JoinResult.Success(
                 lettuceClient.execute(
-                    joinLua, listOf(waitingQueueKey), it, client),
+                    luaOfJoiningLogic, listOf(waitingQueueKey), it, client),
                 it
             )
         }
@@ -85,7 +83,7 @@ class EventClientRedisLuaQueue(
 
     override fun admitNextClientsForDistributed(request: Long) =
         lettuceClient.execute(
-            admitLua,
+            luaOfAdmittingLogic,
             listOf(admittedQueueKey, waitingQueueKey),
             eventProperties.getEventLimit(),
             request
@@ -102,5 +100,4 @@ class EventClientRedisLuaQueue(
         lettuceClient.opsForZSet().rank(waitingQueueKey, client)
             ?.let { RankResult.Success(it.toInt()) }
             ?: RankResult.Fail(NOT_YET_JOIN_MESSAGE)
-
 }
