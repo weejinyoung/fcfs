@@ -1,6 +1,7 @@
 package taskforce.fcfs.clientqueue
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.context.annotation.Primary
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
@@ -8,6 +9,7 @@ import taskforce.fcfs.clientqueue.result.JoinResult
 import taskforce.fcfs.clientqueue.result.RankResult
 
 
+@Primary
 @Component
 class EventClientRedisLuaQueue(
     private val eventProperties: EventProperties,
@@ -69,11 +71,7 @@ class EventClientRedisLuaQueue(
             return JoinResult.Fail(EVENT_DONE_MESSAGE)
         }
         return System.nanoTime().let {
-            JoinResult.Success(
-                lettuceClient.execute(
-                    luaOfJoiningLogic, listOf(waitingQueueKey), it, client),
-                it
-            )
+            JoinResult.Success(lettuceClient.execute(luaOfJoiningLogic, listOf(waitingQueueKey), it, client), it)
         }
     }
 

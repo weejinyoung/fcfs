@@ -26,15 +26,10 @@ class EventClientRedisDisLockQueue(
         redissonClient.getScoredSortedSet<String>("${eventProperties.getEventName()}$WAITING_QUEUE_REDIS_KEY_POSTFIX")
     private val admittedQueue =
         redissonClient.getSet<String>("${eventProperties.getEventName()}$ADMITTED_QUEUE_REDIS_KEY_POSTFIX")
-    private var admittedClientCount = 0
     private val logger = KotlinLogging.logger {}
 
     override fun join(client: String): JoinResult {
-        if (admittedClientCount >= eventProperties.getEventLimit()) {
-            return JoinResult.Fail(EVENT_DONE_MESSAGE)
-        }
-        admittedClientCount = admittedQueue.size
-        if (admittedClientCount >= eventProperties.getEventLimit()) {
+        if (admittedQueue.size >= eventProperties.getEventLimit()) {
             return JoinResult.Fail(EVENT_DONE_MESSAGE)
         }
         return System.nanoTime().let {

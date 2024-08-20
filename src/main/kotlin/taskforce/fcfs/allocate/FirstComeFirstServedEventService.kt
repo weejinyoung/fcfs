@@ -1,13 +1,12 @@
 package taskforce.fcfs.allocate
 
-import org.springframework.beans.factory.annotation.Qualifier
-import taskforce.fcfs.clientqueue.EventClientQueue
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import taskforce.fcfs.clientqueue.EventClientQueue
 
 @Service
 class FirstComeFirstServedEventService(
-    @Qualifier("eventClientRedisLuaQueue") private val eventClientQueue: EventClientQueue<String>,
+    private val eventClientQueue: EventClientQueue<String>,
     private val queueAdmitProperties: QueueAdmitProperties
 ) {
 
