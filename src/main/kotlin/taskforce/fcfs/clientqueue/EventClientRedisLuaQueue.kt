@@ -9,7 +9,7 @@ import taskforce.fcfs.clientqueue.result.JoinResult
 import taskforce.fcfs.clientqueue.result.RankResult
 
 
-@Primary
+@Primary // TODO Redisson 종속 서비스 없애기
 @Component
 class EventClientRedisLuaQueue(
     private val eventProperties: EventProperties,
