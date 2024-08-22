@@ -8,8 +8,8 @@ import taskforce.fcfs.clientqueue.result.RankResult
 import taskforce.fcfs.config.RedissonLockManager
 
 @Component
-@Deprecated(message = "Use EventClientRedisLuaQueue instead", ReplaceWith("EventClientRedisLuaQueue"))
-class EventClientRedisDisLockQueue(
+@Deprecated(message = "Use RedisLuaEventClientQueue instead", ReplaceWith("RedisLuaEventClientQueue"))
+class RedisDisLockEventClientQueue(
     private val redissonLockManager: RedissonLockManager,
     private val redissonClient: RedissonClient,
     private val eventProperties: EventProperties

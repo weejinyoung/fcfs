@@ -11,7 +11,7 @@ import taskforce.fcfs.clientqueue.result.RankResult
 
 @Primary // TODO Redisson 종속 서비스 없애기
 @Component
-class EventClientRedisLuaQueue(
+class RedisLuaEventClientQueue(
     private val eventProperties: EventProperties,
     private val lettuceClient: RedisTemplate<String, Any>
 ) : EventClientQueue<String> {
