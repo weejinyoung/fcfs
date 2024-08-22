@@ -40,6 +40,9 @@ dependencies {
 	// Logging
 	implementation("io.github.oshai:kotlin-logging-jvm:$kotlinLoggingVersion")
 
+	// Actuator 
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
+
 	// Dev Tools
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 
