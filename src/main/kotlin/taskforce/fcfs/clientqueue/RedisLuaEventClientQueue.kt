@@ -1,12 +1,10 @@
 package taskforce.fcfs.clientqueue
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.annotation.PostConstruct
 import org.redisson.api.RScript
 import org.redisson.api.RedissonClient
 import org.redisson.client.codec.StringCodec
 import org.springframework.context.annotation.Primary
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import taskforce.fcfs.clientqueue.result.JoinResult
 import taskforce.fcfs.clientqueue.result.RankResult
@@ -17,7 +15,6 @@ import taskforce.fcfs.clientqueue.result.RankResult
 @Component
 class RedisLuaEventClientQueue(
     private val eventProperties: EventProperties,
-    private val lettuceClient: RedisTemplate<String, Any>,
     private val redissonClient: RedissonClient
 ) : EventClientQueue<String> {
 
@@ -30,6 +27,7 @@ class RedisLuaEventClientQueue(
 
     private val waitingQueueKey = "${eventProperties.getEventName()}${WAITING_QUEUE_REDIS_KEY_POSTFIX}"
     private val admittedQueueKey = "${eventProperties.getEventName()}${ADMITTED_QUEUE_REDIS_KEY_POSTFIX}"
+    private val waitingQueue = redissonClient.getScoredSortedSet<String>(waitingQueueKey)
     private val scriptConnector = redissonClient.getScript(StringCodec.INSTANCE)
     private val logger = KotlinLogging.logger {}
 
@@ -108,10 +106,9 @@ class RedisLuaEventClientQueue(
         }
 
     override fun getWaitingRank(client: String): RankResult =
-        lettuceClient.opsForZSet().rank(waitingQueueKey, client)
-            ?.let { RankResult.Success(it.toInt()) }
+        waitingQueue.rank(client)
+            ?.let { RankResult.Success(it) }
             ?: RankResult.Fail(NOT_YET_JOIN_MESSAGE)
-
 
 }
 
