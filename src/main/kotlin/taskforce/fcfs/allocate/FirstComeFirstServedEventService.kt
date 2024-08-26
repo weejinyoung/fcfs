@@ -19,6 +19,8 @@ class FirstComeFirstServedEventService(
     fun joinClientQueue(client: String) =
         eventClientQueue.join(client)
 
+    // TODO 상세한 트리거 설정
+    // TODO Quartz 등 다양한 custom 제공하는 스케줄러 라이브러리 도입 고려, 하지만 Quartz 는 분산 스케줄링 정보를 RDB 에 저장해야함
     @PostConstruct
     private fun schedule() {
         scheduler.scheduleWithFixedRate(Duration.ofMillis(queueAdmitProperties.getAdmitDelay())) {
@@ -27,11 +29,4 @@ class FirstComeFirstServedEventService(
             }
         }
     }
-
-    // TODO Quartz 등 다양한 custom 제공하는 스케줄러 라이브러리 도입 고려
-    // TODO Quartz 는 분산 스케줄링의 정보를 저장하는 데이터베이스를 관계형데이터베이스로 픽스했다는 소식을 들음..
-//    @Scheduled(fixedDelay = 500)
-//    private fun pollingClientQueue() =
-//        eventClientQueue.admitNextClients(queueAdmitProperties.getAdmitRequest())
-
 }

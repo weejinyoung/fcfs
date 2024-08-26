@@ -10,9 +10,9 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import taskforce.fcfs.clientqueue.result.JoinResult
 import taskforce.fcfs.clientqueue.result.RankResult
-import kotlin.math.log
 
 
+// TODO Waiting Queue 의 최대 제한 설정... 이건 레디스에서 아니면 애플리케이션에서?
 @Primary // TODO dis lock 으로 admit 하던 서비스 없애기
 @Component
 class RedisLuaEventClientQueue(
@@ -32,27 +32,6 @@ class RedisLuaEventClientQueue(
     private val admittedQueueKey = "${eventProperties.getEventName()}${ADMITTED_QUEUE_REDIS_KEY_POSTFIX}"
     private val scriptConnector = redissonClient.getScript(StringCodec.INSTANCE)
     private val logger = KotlinLogging.logger {}
-
-    @PostConstruct
-    fun checkDependenciesInjections() {
-        logger.info { "eventProperties ${eventProperties.getEventLimit()}" }
-    }
-
-    /*
-    KEYS[1] = admittedQueueKey
-    KEYS[2] = waitingQueueKey
-    */
-//    private val luaOfInitializingClientQueueLogic =
-//        """
-//           if redis.call('exists', KEYS[1]) == 0 then
-//               redis.call('sadd', KEYS[1], 'temp')
-//               redis.call('srem', KEYS[1], 'temp')
-//           end
-//           if redis.call('exists', KEYS[2]) == 0 then
-//               redis.call('zadd', KEYS[2], 0, 'temp')
-//               redis.call('zremrangebyrank', KEYS[2], 0, 0)
-//           end
-//        """.trimIndent()
 
     /*
     KEYS[1] = admittedQueueKey
@@ -92,16 +71,6 @@ class RedisLuaEventClientQueue(
                 return rank = redis.call('zrank', KEYS[2], ARGV[3])
             end
         """.trimIndent()
-
-//    @PostConstruct
-//    private fun initClientQueue() {
-//        scriptConnector.eval<Any>(
-//            RScript.Mode.READ_WRITE,
-//            luaOfInitializingClientQueueLogic,
-//            RScript.ReturnType.VALUE,
-//            listOf(admittedQueueKey, waitingQueueKey)
-//        )
-//    }
 
     override fun join(client: String): JoinResult {
         val joinTime = System.nanoTime()
