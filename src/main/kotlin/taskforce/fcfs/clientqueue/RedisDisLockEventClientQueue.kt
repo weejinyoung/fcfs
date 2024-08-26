@@ -38,22 +38,7 @@ class RedisDisLockEventClientQueue(
         }
     }
 
-    override fun admitNextClientsForStandalone(request: Long) {
-        val current = admittedQueue.size
-        if (current >= eventProperties.getEventLimit()) {
-            logger.info { "Event is over" }
-            return
-        }
-        val admit = minOf((eventProperties.getEventLimit() - current), request)
-        val admittedClients = waitingQueue.valueRange(0, (admit - 1).toInt()).ifEmpty {
-            logger.info { "Waiting queue is empty" }
-            return
-        }
-        waitingQueue.removeRangeByRank(0, (admit - 1).toInt())
-        admittedQueue.addAll(admittedClients)
-    }
-
-    override fun admitNextClientsForDistributed(request: Long) {
+    override fun admitNextClients(request: Long) {
         redissonLockManager.tryLockWith(eventProperties.getEventName()) {
             val current = admittedQueue.size
             if (current >= eventProperties.getEventLimit()) {
