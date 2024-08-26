@@ -18,7 +18,7 @@ repositories {
 	mavenCentral()
 }
 
-val redissonVersion = "3.33.0"
+val redissonVersion = "3.35.0"
 val kotlinLoggingVersion = "7.0.0"
 val kotestRunnerVersion = "5.9.0"
 val kotestExtensionsVersion = "1.3.0"
@@ -34,7 +34,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 
 	// Inmemory DB Access
-	implementation("org.redisson:redisson-spring-boot-starter:${redissonVersion}")
+	implementation("org.redisson:redisson-spring-boot-starter:$redissonVersion")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
 	// Logging
