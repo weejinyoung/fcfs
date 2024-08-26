@@ -8,7 +8,6 @@ import java.time.Duration
 import java.util.concurrent.ScheduledFuture
 
 @Configuration
-@EnableScheduling
 class TaskSchedulerConfig {
 
     @Bean
