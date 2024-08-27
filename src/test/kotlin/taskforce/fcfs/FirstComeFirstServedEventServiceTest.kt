@@ -1,15 +1,20 @@
 package taskforce.fcfs
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.StringSpec
 import org.springframework.boot.test.context.SpringBootTest
+import taskforce.fcfs.allocate.FirstComeFirstServedEventService
+import java.util.concurrent.CountDownLatch
+import kotlin.concurrent.thread
 
 
+// TODO 제대로 된 단위테스트를 공부해보자
 @SpringBootTest
-class CouponEventTest (
+class FirstComeFirstServedEventServiceTest (
 //    private val eventService: FirstComeFirstServedEventService
 ): StringSpec({
-
-    "쿠폰 발급 테스트" {
+//
+//    "선착순 테스트" {
 //        val logger = KotlinLogging.logger{}
 //        fun addQueueWorker(countDownLatch: CountDownLatch) {
 //            eventService.joinClientQueue(Thread.currentThread().toString()).also {
@@ -27,9 +32,5 @@ class CouponEventTest (
 //        workers.forEach(Thread::start)
 //        countDownLatch.await()
 //        Thread.sleep(5000)
-    }
-
-    "테스트1" {
-
-    }
+//    }
 })
