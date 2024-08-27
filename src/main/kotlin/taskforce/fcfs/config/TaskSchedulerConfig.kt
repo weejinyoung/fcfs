@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledFuture
 @Configuration
 class TaskSchedulerConfig {
 
+    // TODO pool 설정
     @Bean
     fun threadPoolTaskScheduler(): ThreadPoolTaskScheduler =
         ThreadPoolTaskScheduler().apply {

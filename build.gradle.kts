@@ -33,7 +33,7 @@ dependencies {
 	// Web
 	implementation("org.springframework.boot:spring-boot-starter-web")
 
-	// Inmemory DB Access
+	// Redis Access
 	implementation("org.redisson:redisson-spring-boot-starter:$redissonVersion")
 
 	// Logging
