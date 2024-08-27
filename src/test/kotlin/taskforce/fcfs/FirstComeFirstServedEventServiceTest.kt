@@ -33,4 +33,8 @@ class FirstComeFirstServedEventServiceTest (
 //        countDownLatch.await()
 //        Thread.sleep(5000)
 //    }
+
+    "스케줄러 테스트" {
+
+    }
 })

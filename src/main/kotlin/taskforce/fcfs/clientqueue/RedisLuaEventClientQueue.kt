@@ -11,7 +11,7 @@ import taskforce.fcfs.clientqueue.result.RankResult
 
 
 // TODO Waiting Queue 의 최대 제한 설정... 이건 레디스에서 아니면 애플리케이션에서?
-// TODO dis lock 으로 admit 하던 서비스 없애기
+// TODO dis lock 으로 admit 하던  서비스 없애기
 // TODO evalsha 로 스크립트 캐싱
 @Primary
 @Component
@@ -111,5 +111,4 @@ class RedisLuaEventClientQueue(
         waitingQueue.rank(client)
             ?.let { RankResult.Success(it) }
             ?: RankResult.Fail(NOT_YET_JOIN_MESSAGE)
-
 }

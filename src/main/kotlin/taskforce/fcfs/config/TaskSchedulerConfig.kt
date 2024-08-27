@@ -15,6 +15,7 @@ class TaskSchedulerConfig {
     fun threadPoolTaskScheduler(): ThreadPoolTaskScheduler =
         ThreadPoolTaskScheduler().apply {
             poolSize = 3
+            setThreadNamePrefix("fcfs-scheduler-")
             initialize()
         }
 }
