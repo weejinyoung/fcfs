@@ -12,9 +12,9 @@ interface EventClientQueue<T> {
     fun join(client: T): JoinResult
 
     /**
-     * Admit next clients, distributed WAS environment default
+     * Admit clients, distributed WAS environment default
      */
-    fun admitNextClients(request: Long)
+    fun admitClients(request: Long)
 
     fun getWaitingRank(client: String): RankResult
 }

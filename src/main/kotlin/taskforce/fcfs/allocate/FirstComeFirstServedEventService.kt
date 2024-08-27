@@ -22,10 +22,10 @@ class FirstComeFirstServedEventService(
     // TODO 상세한 트리거 설정
     // TODO Quartz 등 다양한 custom 제공하는 스케줄러 라이브러리 도입 고려, 하지만 Quartz 는 분산 스케줄링 정보를 RDB 에 저장해야함
     @PostConstruct
-    private fun schedule() {
+    private fun admitClientsByPolling() {
         scheduler.scheduleWithFixedRate(Duration.ofMillis(queueAdmitProperties.getAdmitDelay())) {
             redissonLockManager.tryLockWith("SCHEDULE") {
-                eventClientQueue.admitNextClients(queueAdmitProperties.getAdmitRequest())
+                eventClientQueue.admitClients(queueAdmitProperties.getAdmitRequest())
             }
         }
     }

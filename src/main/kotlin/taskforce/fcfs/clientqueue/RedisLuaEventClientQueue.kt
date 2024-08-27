@@ -11,7 +11,9 @@ import taskforce.fcfs.clientqueue.result.RankResult
 
 
 // TODO Waiting Queue 의 최대 제한 설정... 이건 레디스에서 아니면 애플리케이션에서?
-@Primary // TODO dis lock 으로 admit 하던 서비스 없애기
+// TODO dis lock 으로 admit 하던 서비스 없애기
+// TODO evalsha 로 스크립트 캐싱
+@Primary
 @Component
 class RedisLuaEventClientQueue(
     private val eventProperties: EventProperties,
@@ -62,11 +64,11 @@ class RedisLuaEventClientQueue(
     */
     private val luaOfJoiningLogic =
         """
-            if redis.call('zcard', KEYS[1]) >= tonumber(ARGV[1]) then
-                return -1
+            if redis.call('scard', KEYS[1]) >= tonumber(ARGV[1]) then
+                return -1;
             else
-                redis.call('zadd', KEYS[2], tonumber(ARGV[2]), ARGV[3])
-                return rank = redis.call('zrank', KEYS[2], ARGV[3])
+                redis.call('zadd', KEYS[2], tonumber(ARGV[2]), ARGV[3]);
+                return redis.call('zrank', KEYS[2], ARGV[3]);
             end
         """.trimIndent()
 
@@ -75,7 +77,7 @@ class RedisLuaEventClientQueue(
         return scriptConnector.eval<Long>(
             RScript.Mode.READ_WRITE,
             luaOfJoiningLogic,
-            RScript.ReturnType.INTEGER,
+            RScript.ReturnType.VALUE,
             listOf(admittedQueueKey, waitingQueueKey),
             eventProperties.getEventLimit(),
             joinTime,
@@ -88,7 +90,7 @@ class RedisLuaEventClientQueue(
         }
     }
 
-    override fun admitNextClients(request: Long) =
+    override fun admitClients(request: Long) =
         scriptConnector.eval<Long>(
             RScript.Mode.READ_WRITE,
             luaOfAdmittingLogic,
@@ -111,28 +113,3 @@ class RedisLuaEventClientQueue(
             ?: RankResult.Fail(NOT_YET_JOIN_MESSAGE)
 
 }
-
-//    override fun join(client: String): JoinResult {
-//        val current = lettuceClient.opsForSet().size(admittedQueueKey) ?: throw Exception()
-//        if (current >= eventProperties.getEventLimit()) {
-//            return JoinResult.Fail(EVENT_DONE_MESSAGE)
-//        }
-//        return System.nanoTime().let {
-//            JoinResult.Success(lettuceClient.execute(luaOfJoiningLogic, listOf(waitingQueueKey), it, client), it)
-//        }
-//    }
-
-//    override fun admitNextClients(request: Long) =
-//        lettuceClient.execute(
-//            luaOfAdmittingLogic,
-//            listOf(admittedQueueKey, waitingQueueKey),
-//            eventProperties.getEventLimit(),
-//            request
-//        ).let {
-//            when (it) {
-//                1L -> logger.info { "Event is over" }
-//                2L -> logger.info { "Waiting queue is empty" }
-//                3L -> logger.info { "Admit Success" }
-//                else -> throw Exception()
-//            }
-//        }

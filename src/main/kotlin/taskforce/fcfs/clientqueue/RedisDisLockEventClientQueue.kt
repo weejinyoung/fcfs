@@ -37,7 +37,7 @@ class RedisDisLockEventClientQueue(
         }
     }
 
-    override fun admitNextClients(request: Long) {
+    override fun admitClients(request: Long) {
         redissonLockManager.tryLockWith(eventProperties.getEventName()) {
             val current = admittedQueue.size
             if (current >= eventProperties.getEventLimit()) {
