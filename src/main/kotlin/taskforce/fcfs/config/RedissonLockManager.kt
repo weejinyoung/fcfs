@@ -1,5 +1,6 @@
 package taskforce.fcfs.config
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.redisson.api.RLock
 import org.redisson.api.RedissonClient
 import org.springframework.stereotype.Service
@@ -11,6 +12,7 @@ class RedissonLockManager(
     private val redissonClient: RedissonClient
 ) {
 
+    private val logger = KotlinLogging.logger {  }
     private val LOCK_PREFIX = "LOCK:"
 
     fun <R> tryLockWith(
@@ -43,7 +45,7 @@ class RedissonLockManager(
         task: () -> R,
     ): R {
         val rLock: RLock = redissonClient.getLock(LOCK_PREFIX + lockName) // Lock 호출
-        val available: Boolean = rLock.tryLock(waitTime, leaseTime, TimeUnit.SECONDS) // Lock 획득 시도
+        val available: Boolean = rLock.tryLock(waitTime, leaseTime, TimeUnit.MILLISECONDS) // Lock 획득 시도
         if (!available) { // 획득 시도를 실패했을 경우 Exception 처리
             throw RedissonDisLockWaitTimeoutException()
         }
@@ -53,9 +55,10 @@ class RedissonLockManager(
                 task()
                 // TODO Delay 를 주는 다른 방법?
                 Thread.sleep(delayTime)
-                // TODO 언제 다시 갱신할 것인지?, 일단 5번에 한 번
+                // TODO 언제 다시 갱신할 것인지?, 일단 3번에 한 번
                 if(count >= 5) {
-                    rLock.tryLock(waitTime, leaseTime, TimeUnit.SECONDS)
+                    rLock.tryLock(waitTime, leaseTime * 3, TimeUnit.MILLISECONDS)
+                    rLock.remainTimeToLive()
                     count = 0
                 }
                 else count++

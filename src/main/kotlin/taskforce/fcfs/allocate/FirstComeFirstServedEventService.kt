@@ -1,5 +1,6 @@
 package taskforce.fcfs.allocate
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 import org.springframework.stereotype.Service
@@ -15,6 +16,8 @@ class FirstComeFirstServedEventService(
     private val redissonLockManager: RedissonLockManager,
     private val scheduler: ThreadPoolTaskScheduler
 ) {
+
+    private val logger = KotlinLogging.logger {  }
 
     //@Counted("client.join")
     fun joinClientQueue(client: String) =
@@ -32,6 +35,7 @@ class FirstComeFirstServedEventService(
                 leaseTime = queueAdmitProperties.getAdmitDelay() * 5,
                 delayTime = queueAdmitProperties.getAdmitDelay()
             ) {
+                logger.info { "im a worker, thread ID is ${Thread.currentThread().id}" }
                 eventClientQueue.admitClients(queueAdmitProperties.getAdmitRequest())
             }
         }
