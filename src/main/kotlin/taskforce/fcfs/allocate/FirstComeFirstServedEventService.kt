@@ -16,8 +16,6 @@ class FirstComeFirstServedEventService(
     private val scheduler: ThreadPoolTaskScheduler
 ) {
 
-    private val multiWasCount = 3
-
     //@Counted("client.join")
     fun joinClientQueue(client: String) =
         eventClientQueue.join(client)
@@ -26,13 +24,32 @@ class FirstComeFirstServedEventService(
     // TODO Quartz 등 다양한 custom 제공하는 스케줄러 라이브러리 도입 고려, 하지만 Quartz 는 분산 스케줄링 정보를 RDB 에 저장해야함
     @PostConstruct
     private fun admitClientsByPollingForMultiWas() {
+        // TODO waitTime 이 사실상 무한대이다
         scheduler.scheduleWithFixedRate(Duration.ofMillis(queueAdmitProperties.getAdmitDelay())) {
-            redissonLockManager.tryLockWith(
-                "SCHEDULE",
-                queueAdmitProperties.getAdmitDelay() * multiWasCount,
-                queueAdmitProperties.getAdmitDelay()) {
+            redissonLockManager.tryLockAndRepeatWith(
+                lockName = "SCHEDULE",
+                waitTime = Long.MAX_VALUE /*스케줄러 싱글스레드는 무한 락 대기하게 해보자, 스레드풀이 스케줄러 용 만인지 궁금하긴 하다*/,
+                leaseTime = queueAdmitProperties.getAdmitDelay() * 5,
+                delayTime = queueAdmitProperties.getAdmitDelay()
+            ) {
                 eventClientQueue.admitClients(queueAdmitProperties.getAdmitRequest())
             }
         }
     }
+
+
+//    @PostConstruct
+//    private fun admitClientsByPollingForMultiWas() {
+//        scheduler.scheduleWithFixedRate(Duration.ofMillis(queueAdmitProperties.getAdmitDelay())) {
+//            redissonLockManager.tryLockWith(
+//                "SCHEDULE",
+//                queueAdmitProperties.getAdmitDelay(),
+//                queueAdmitProperties.getAdmitDelay()) {
+//                eventClientQueue.admitClients(queueAdmitProperties.getAdmitRequest())
+//            }
+//        }
+//    }
+
+
+
 }

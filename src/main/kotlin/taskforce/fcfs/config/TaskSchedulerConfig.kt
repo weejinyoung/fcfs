@@ -14,8 +14,8 @@ class TaskSchedulerConfig {
     @Bean
     fun threadPoolTaskScheduler(): ThreadPoolTaskScheduler =
         ThreadPoolTaskScheduler().apply {
+            // TODO 3개일 필요가 있을까? 게다가 분산락은 스레드 id 로 키를 식별하는데 1개로 해야하지 않을까
             poolSize = 3
             setThreadNamePrefix("fcfs-scheduler-")
-            initialize()
         }
 }

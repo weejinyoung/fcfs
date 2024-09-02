@@ -38,7 +38,7 @@ class RedisDisLockEventClientQueue(
     }
 
     override fun admitClients(request: Long) {
-        redissonLockManager.tryLockWith(eventProperties.getEventName()) {
+        redissonLockManager.tryLockWith(eventProperties.getEventName(), 2000, 2000) {
             val current = admittedQueue.size
             if (current >= eventProperties.getEventLimit()) {
                 logger.info { "Event is over" }

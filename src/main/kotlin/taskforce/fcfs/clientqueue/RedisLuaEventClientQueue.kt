@@ -6,6 +6,7 @@ import org.redisson.api.RedissonClient
 import org.redisson.client.codec.StringCodec
 import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import taskforce.fcfs.clientqueue.result.JoinResult
 import taskforce.fcfs.clientqueue.result.RankResult
 
@@ -39,6 +40,7 @@ class RedisLuaEventClientQueue(
     ARGV[1] = eventLimit
     ARGV[2] = request
     */
+    // TODO admit 한 것을 가져와 데이터베이스에 바로 쓰는 전략 로직도 만들어놓자
     private val luaOfAdmittingLogic =
         """
            local current = redis.call('scard', KEYS[1]);
