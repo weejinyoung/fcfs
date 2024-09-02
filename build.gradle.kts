@@ -33,7 +33,7 @@ dependencies {
 	// Web
 	implementation("org.springframework.boot:spring-boot-starter-web")
 
-	// Redis Access
+	// Redis client
 	implementation("org.redisson:redisson-spring-boot-starter:$redissonVersion")
 
 	// Logging
@@ -43,8 +43,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("io.micrometer:micrometer-registry-prometheus")
 
-	// Dev Tools
+	// Dev tools
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+	// For test of shedlock
+//	implementation("net.javacrumbs.shedlock:shedlock-spring:5.15.1")
+//	implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:5.15.1")
 
 	// Test
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
