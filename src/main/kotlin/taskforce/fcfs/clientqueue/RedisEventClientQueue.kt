@@ -6,7 +6,6 @@ import org.redisson.api.RedissonClient
 import org.redisson.client.codec.StringCodec
 import org.springframework.context.annotation.Primary
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Transactional
 import taskforce.fcfs.clientqueue.result.JoinResult
 import taskforce.fcfs.clientqueue.result.RankResult
 
@@ -16,7 +15,7 @@ import taskforce.fcfs.clientqueue.result.RankResult
 // TODO evalsha 로 스크립트 캐싱
 @Primary
 @Component
-class RedisLuaEventClientQueue(
+class RedisEventClientQueue(
     private val eventProperties: EventProperties,
     private val redissonClient: RedissonClient
 ) : EventClientQueue<String> {
@@ -73,7 +72,6 @@ class RedisLuaEventClientQueue(
                 return redis.call('zrank', KEYS[2], ARGV[3]);
             end
         """.trimIndent()
-
     override fun join(client: String): JoinResult {
         val joinTime = System.nanoTime()
         return scriptConnector.eval<Long>(
