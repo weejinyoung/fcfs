@@ -28,32 +28,16 @@ class FirstComeFirstServedEventService(
     @PostConstruct
     private fun admitClientsByPollingForMultiWas() {
         // TODO waitTime 이 사실상 무한대이다
-        scheduler.scheduleWithFixedRate(Duration.ofMillis(queueAdmitProperties.getAdmitDelay())) {
+        // TODO 다운 후 다시 돌아왔을 때를 대비한 스케줄러긴 한데.. 그냥 while 문으로 돌려도 되는 거 아닐까?
+        scheduler.scheduleWithFixedRate(Duration.ofMillis(3000)) {
             redissonLockManager.tryLockAndRepeatWith(
                 lockName = "SCHEDULE",
                 waitTime = Long.MAX_VALUE /*스케줄러 싱글스레드는 무한 락 대기하게 해보자, 스레드풀이 스케줄러 용 만인지 궁금하긴 하다*/,
                 leaseTime = queueAdmitProperties.getAdmitDelay() * 5,
                 delayTime = queueAdmitProperties.getAdmitDelay()
             ) {
-                logger.info { "im a worker, thread ID is ${Thread.currentThread().id}" }
                 eventClientQueue.admitClients(queueAdmitProperties.getAdmitRequest())
             }
         }
     }
-
-
-//    @PostConstruct
-//    private fun admitClientsByPollingForMultiWas() {
-//        scheduler.scheduleWithFixedRate(Duration.ofMillis(queueAdmitProperties.getAdmitDelay())) {
-//            redissonLockManager.tryLockWith(
-//                "SCHEDULE",
-//                queueAdmitProperties.getAdmitDelay(),
-//                queueAdmitProperties.getAdmitDelay()) {
-//                eventClientQueue.admitClients(queueAdmitProperties.getAdmitRequest())
-//            }
-//        }
-//    }
-
-
-
 }
