@@ -59,4 +59,7 @@ class RedisDisLockEventClientQueue(
             ?.let { RankResult.Success(it) }
             ?: RankResult.Fail(NOT_YET_JOIN_MESSAGE)
 
+    override fun clear() {
+        TODO("Not yet implemented")
+    }
 }
