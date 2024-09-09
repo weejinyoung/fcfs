@@ -72,6 +72,7 @@ class RedisEventClientQueue(
                 return redis.call('zrank', KEYS[2], ARGV[3]);
             end
         """.trimIndent()
+
     override fun join(client: String): JoinResult {
         val joinTime = System.nanoTime()
         return scriptConnector.eval<Long>(
