@@ -115,6 +115,9 @@ class RedisEventClientQueue(
 
     override fun clear() {
         waitingQueue.clear()
-        redissonClient.getSet <String>(admittedQueueKey).clear()
+        redissonClient.getSet<String>(admittedQueueKey).clear()
     }
+
+    private fun cachingLuaScriptInRedis(script: String) =
+        scriptConnector.scriptLoad(script)
 }
