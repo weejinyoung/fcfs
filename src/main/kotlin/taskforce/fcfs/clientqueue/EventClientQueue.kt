@@ -17,4 +17,10 @@ interface EventClientQueue<T> {
     fun admitClients(request: Long)
 
     fun getWaitingRank(client: String): RankResult
+
+    /**
+     *This is a test method.
+     *Never run this method in a production environment.
+     */
+    fun clear()
 }

@@ -19,16 +19,12 @@ class FirstComeFirstServedEventService(
 
     private val logger = KotlinLogging.logger {  }
 
-    //@Counted("client.join")
-    fun joinClientQueue(client: String) =
-        eventClientQueue.join(client)
 
     // TODO 상세한 트리거 설정
     // TODO Quartz 등 다양한 custom 제공하는 스케줄러 라이브러리 도입 고려, 하지만 Quartz 는 분산 스케줄링 정보를 RDB 에 저장해야함
     @PostConstruct
     private fun admitClientsByPollingForMultiWas() {
-        // TODO waitTime 이 사실상 무한대이다
-        // TODO 다운 후 다시 돌아왔을 때를 대비한 스케줄러긴 한데.. 그냥 while 문으로 돌려도 되는 거 아닐까?
+        // 톰캣의 스레드 풀에 있는 스레드를 사용하지 않기 위함
         scheduler.scheduleWithFixedRate(Duration.ofMillis(3000)) {
             redissonLockManager.tryLockAndRepeatWith(
                 lockName = "SCHEDULE",
@@ -39,5 +35,13 @@ class FirstComeFirstServedEventService(
                 eventClientQueue.admitClients(queueAdmitProperties.getAdmitRequest())
             }
         }
+    }
+
+    //@Counted("client.join")
+    fun joinClientQueue(client: String) =
+        eventClientQueue.join(client)
+
+    fun clearClientQueue() {
+        eventClientQueue.clear()
     }
 }
