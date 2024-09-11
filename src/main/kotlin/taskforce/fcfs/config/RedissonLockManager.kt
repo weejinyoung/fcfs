@@ -53,15 +53,12 @@ class RedissonLockManager(
             var count = 0;
             while (true) {
                 task()
-                // TODO Delay 를 주는 다른 방법?
-                Thread.sleep(delayTime)
-                // TODO 언제 다시 갱신할 것인지?, 일단 3번에 한 번
-                if(count >= 5) {
-                    rLock.tryLock(waitTime, leaseTime * 3, TimeUnit.MILLISECONDS)
-                    rLock.remainTimeToLive()
+                Thread.sleep(delayTime) // TODO Delay 를 주는 다른 방법?
+                count++
+                if(count >= 4) { // TODO 언제 다시 갱신할 것인지?, 일단 4번에 한 번
+                    rLock.tryLock(waitTime, leaseTime, TimeUnit.MILLISECONDS)
                     count = 0
                 }
-                else count++
             }
         } finally {
             if (rLock.isHeldByCurrentThread) { // 해당 스레드가 Lock을 소유 중인지 확인
