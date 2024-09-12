@@ -3,21 +3,48 @@ server:
     mbeanregistry:
       enabled: true
 
-spring:
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
 management:
   endpoints:
     web:
       exposure:
         include: "*"
 
+---
+# Local
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+fcfs:
+  event:
+    name: CHICKEN
+    limit: 1000
+  queue:
+    admit:
+      request: 25
+      delay: 500
+
 logging:
   level:
-    root: INFO
+    root: DEBUG
+
+---
+# Prod
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  data:
+    redis:
+      host: ip-172-31-47-47.ap-northeast-2.compute.internal
+      port: 6379
 
 fcfs:
   event:
@@ -27,3 +54,7 @@ fcfs:
     admit:
       request: 8
       delay: 700
+
+logging:
+  level:
+    root: INFO
