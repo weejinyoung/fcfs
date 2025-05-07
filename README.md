@@ -8,13 +8,11 @@
 
 ### Redisson RLock 분산 스케줄링, Failover 시퀀스 다이어그램
 
-![분산 스케줄링.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/cc1335e4-9d8b-4d1e-a74a-ad98abe19eb6/8c80e7af-e01b-4a28-9a34-f4a184c5ddea/%E1%84%87%E1%85%AE%E1%86%AB%E1%84%89%E1%85%A1%E1%86%AB_%E1%84%89%E1%85%B3%E1%84%8F%E1%85%A6%E1%84%8C%E1%85%AE%E1%86%AF%E1%84%85%E1%85%B5%E1%86%BC.png)
-
 ---
 
 ### 핵심 코드
 
-```json
+```kotlin
     /**
      * 분산 환경에서 선착순 서비스를 위한 락 관리 메서드.
      *
