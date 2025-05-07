@@ -7,6 +7,7 @@
 ---
 
 ### Redisson RLock 분산 스케줄링, Failover 시퀀스 다이어그램
+![분산 스케줄링](https://github.com/user-attachments/assets/6ac1b15a-64bf-402c-a8fc-b735b3771038)
 
 ---
 
