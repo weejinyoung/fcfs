@@ -65,7 +65,7 @@ class RedissonLockManager(
     ) {
         val logger = KotlinLogging.logger {}
         val rLock: RLock = redissonClient.getLock(LOCK_PREFIX + lockName)
-        val renewInterval = Math.max(leaseTime / 3, 100)
+        val renewInterval = (leaseTime / 3).coerceAtLeast(100)
 
         while (!Thread.currentThread().isInterrupted) {
             try {

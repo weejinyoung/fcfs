@@ -10,11 +10,10 @@ import java.util.concurrent.ScheduledFuture
 @Configuration
 class TaskSchedulerConfig {
 
-    // TODO pool 설정
     @Bean
     fun threadPoolTaskScheduler(): ThreadPoolTaskScheduler =
         ThreadPoolTaskScheduler().apply {
-            // TODO 3개일 필요가 있을까? 게다가 분산락은 스레드 id 로 키를 식별하는데 1개로 해야하지 않을까
+            // 현재 선착순 락을 위한 용도 뿐이므로 스레드는 하나
             poolSize = 1
             setThreadNamePrefix("fcfs-scheduler-")
         }
